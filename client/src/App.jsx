@@ -4,21 +4,28 @@ import { Box, Button, Container, TextField, Typography } from '@mui/material'
 
 function App() {
   const [message, setMessage] = useState('')
+  const [room, setRoom] = useState('')
+  const [socketId, setSocketId] = useState('')
   const socket = useMemo(() => io(`http://localhost:3000`), [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    socket.emit('message', message)
+    socket.emit('message', { message, room })
     setMessage('')
   }
 
   useEffect(() => {
     socket.on('connect', () => {
+      setSocketId(socket.id)
       console.log("Connected", socket.id);
     })
 
     socket.on('welcome', (m) => {
       console.log(m);
+    })
+
+    socket.on('recieve-message', (data) => {
+      console.log(data);
     })
 
     return () => {
@@ -56,12 +63,41 @@ function App() {
         SOCKET.IO Chat
       </Typography>
 
+      <Typography
+        variant="h6"
+        component="div"
+        gutterBottom
+        sx={{
+          textAlign: 'center',
+          color: '#0000h0',
+          fontWeight: '600',
+          mb: 3,
+          letterSpacing: 1.2,
+        }}
+      >
+        {socketId}
+      </Typography>
+
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
         <TextField
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           id="outlined-basic"
           label="Your Message"
+          variant="outlined"
+          fullWidth
+          sx={{
+            mb: 3,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+            },
+          }}
+        />
+        <TextField
+          value={room}
+          onChange={(e) => setRoom(e.target.value)}
+          id="outlined-basic"
+          label="Room"
           variant="outlined"
           fullWidth
           sx={{

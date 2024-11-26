@@ -31,14 +31,11 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('User connected');
     console.log('Socket Id', socket.id);
-    // console.log(socket);
 
-    // socket.emit('welcome', `Welcome to our website ${socket.id}`)
-    // socket.broadcast.emit('welcome', `${socket.id} has joined`)
-
-    socket.on('message', (data) => {
-        console.log(data);
-    })
+    socket.on("message", ({ message, room }) => {
+        console.log(message, room);
+        io.to(room).emit('recieve-message', message)
+    });
 
     socket.on("disconnect", () => {
         console.log(`User disconnected ${socket.id}`);
