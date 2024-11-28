@@ -3,19 +3,28 @@ import { io } from 'socket.io-client'
 import { Box, Button, Container, Stack, TextField, Typography, Paper } from '@mui/material'
 
 function App() {
+  const [messagesArray, setMessagesArray] = useState([])
   const [message, setMessage] = useState('') // State for the user's message input
   const [room, setRoom] = useState('') // State for the room input
   const [socketId, setSocketId] = useState('') // State to store the connected socket ID
-  const [messagesArray, setMessagesArray] = useState([])
+  const [roomName, setRoomName] = useState('')
 
   // Initialize socket connection and ensure memoization to avoid unnecessary re-creation
-  const socket = useMemo(() => io(`http://localhost:3000`), [])
+  const socket = useMemo(() => io(`http://localhost:3000`, {
+    withCredentials: true,
+  }), [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
     // Emit message along with room information
     socket.emit('message', { message, room })
     setMessage('') // Clear message input after submission
+  }
+
+  const joinRoomHandler = (e) => {
+    e.preventDefault()
+    socket.emit('join-room', roomName)
+    setRoomName('')
   }
 
   useEffect(() => {
@@ -86,6 +95,44 @@ function App() {
       >
         Socket ID: {socketId}
       </Paper>
+
+      <form onSubmit={joinRoomHandler}>
+        <h5>Join Room</h5>
+        <TextField
+          value={roomName}
+          onChange={(e) => setRoomName(e.target.value)}
+          label="Room Name"
+          variant="outlined"
+          fullWidth
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '12px',
+            },
+          }}
+        />
+        <Box textAlign="center">
+          <Button
+            type="submit"
+            variant="contained"
+            color="secondary"
+            sx={{
+              px: 8,
+              py: 1.8,
+              fontWeight: '700',
+              textTransform: 'capitalize',
+              fontSize: '1rem',
+              letterSpacing: 1.2,
+              borderRadius: '50px',
+              transition: 'transform 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.1)',
+              },
+            }}
+          >
+            Join
+          </Button>
+        </Box>
+      </form>
 
       {/* Form to send message and specify the room */}
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
